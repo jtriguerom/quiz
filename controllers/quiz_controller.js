@@ -14,11 +14,24 @@ exports.load = function(req, res, next, quizId) {
 
 // GET /quizes
 exports.index = function(req, res){
-  models.Quiz.findAll().then(
-    function(quizes){
-      res.render('quizes/index.ejs', {quizes: quizes});
-    }
-  ).catch(function(error) { next(error);})
+  var busqueda = req.query.search;
+	var palabra = ('%' + busqueda!=''?busqueda.toLowerCase():'' + '%').replace(/ /g,'%');
+  if (busqueda) {
+    models.Quiz.findAll({
+			where: ["lower(pregunta) like ?", palabra],
+			order: [['pregunta', 'ASC']]}
+		).then(
+      function(quizes) {
+        res.render('quizes/index.ejs', {quizes: quizes});
+	    }).catch(function(error) {next(error);});
+  }
+  else {
+    models.Quiz.findAll().then(
+      function(quizes){
+        res.render('quizes/index.ejs', {quizes: quizes});
+      }
+    ).catch(function(error) { next(error);})
+  }
 };
 
 // GET /quizes/:id
