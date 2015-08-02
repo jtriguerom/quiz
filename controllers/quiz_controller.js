@@ -6,6 +6,7 @@ exports.load = function(req, res, next, quizId) {
     function(quiz) {
       if (quiz) {
         req.quiz = quiz;
+        //console.log("Funcion load llamada para quizId=" + quizId + " quiz " + quiz + "respuesta " + quiz.respuesta);
         next()
       } else { next(new Error('No existe quizId=' + quizId)); }
     }
@@ -77,6 +78,32 @@ exports.create = function(req, res) {
   	}
   );
 };
+
+// GET /quizes/:id/edit
+exports.edit = function(req, res) {
+    var quiz = req.quiz;
+    res.render('quizes/edit', {quiz: quiz, errors: []});
+};
+
+exports.update = function(req, res) {
+	req.quiz.pregunta = req.body.quiz.pregunta;
+	req.quiz.respuesta = req.body.quiz.respuesta;
+
+	req.quiz.validate().then(
+    function(err) {
+      if(err) {
+        res.render('quizes/edit', {quiz: req.quiz, errors: err.errors});
+      } else {
+        //guarda en DB los campos pregunta y respuesta de quiz
+        req.quiz.save({fields: ["pregunta", "respuesta"]}).then(
+          function(){
+            res.redirect('/quizes');
+          }
+        );
+      }
+    }
+	);
+}
 
 //GET /author
 exports.author = function(req, res) {
